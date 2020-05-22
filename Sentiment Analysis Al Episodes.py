@@ -54,8 +54,9 @@ def analyze_sentiment(text_content):
     sentimentdf = sentimentdf.append({'Positive Sentiment': positiveCount, 'Neutral Sentiment': neutralCount, 'Negative Sentiment': negativeCount,'Episode Sentiment Score': response.document_sentiment.score ,'Episode Magnitude Score': response.document_sentiment.magnitude, 'Episode Number':epNumber,'Episode Title':epTitle ,'Avg Sentiment': avgSentiment ,'Percent Positive':percentPositive,'Percent Negative':percentNegative,'Percent Neutral':percentNeutral,'Date Published':publishDate}, ignore_index=True) 
     return(sentimentdf)
 
+PodcastName = "Seize The Yay"
 
-data = pd.read_csv("C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/Seize The Yay/Transcript.csv", quotechar='"', engine='python')#, engine='python' 
+data = pd.read_csv("C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/" + PodcastName + "/Transcript.csv", quotechar='"', engine='python')#, engine='python' 
 
 dfcsv = pd.DataFrame(data)
 print(dfcsv.head)
@@ -70,7 +71,7 @@ for index, row in dfcsv.iterrows():
         print(epTitle + " completed")
     except:
         print(epTitle + " error")
-summarydf.to_csv(r'C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/Seize The Yay/Sentiment_Analysis.csv', index = False)
+summarydf.to_csv(r'C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/' + PodcastName + '/Sentiment_Analysis.csv', index = False)
 
 #C:\Users\ruari\Google Drive (ruari@whalepodanalytics.com)\Podcast AI\A Rational Fear
 
