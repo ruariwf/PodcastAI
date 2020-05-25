@@ -1,11 +1,16 @@
 import feedparser
 import requests
+import datetime
 
 
 
 def episode_download(mp3_url, file_name):
+	illegal = ['NUL','\',''//',':','*','"','<','>','|']
+	for i in illegal:
+		cfile_name = file_name.replace(i, '')
 	r = requests.get(mp3_url, allow_redirects=True)
-	open(file_name + '.mp3', 'wb').write(r.content)
+	print(cfile_name)
+	open(cfile_name + '.mp3', 'wb').write(r.content)
 
 
 def get_mp3_download(rssFeed, limit):
@@ -17,15 +22,19 @@ def get_mp3_download(rssFeed, limit):
 			while x < limit:
 				rssLinks = rssEntries[x].links
 				title = rssEntries[x].title
+				publishedDate = rssEntries[x].published
 				x+=1
 				downloadLink = rssLinks[1]
 				for rows in downloadLink:
 					url = downloadLink['href']
 				episode_download(url, title)
 				print(title + " downloaded")
+				print(publishedDate)
 	except: print("done")
 
-get_mp3_download("https://feeds.simplecast.com/6_oR5wn4", 3)
+get_mp3_download("https://anchor.fm/s/f39a864/podcast/rss", 3)
 
-
+#need to clean up names to allow the script to run
+#shameless - https://rss.whooshkaa.com/rss/podcast/id/2723
+#Tdts - https://feeds.simplecast.com/6_oR5wn4
 

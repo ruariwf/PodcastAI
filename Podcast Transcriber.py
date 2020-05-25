@@ -12,6 +12,7 @@ from google.cloud.speech import enums
 from google.cloud.speech import types
 import wave
 from google.cloud import storage
+from pydub.utils import mediainfo
 
 
 def mp3_to_wav(audio_file_name):
@@ -40,6 +41,10 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
 
     blob.upload_from_filename(source_file_name)
 
+def mp3_framerate(audio_file_name):
+    info = mediainfo(audio_file_name)
+    framerate = info['sample_rate']
+    return framerate
 
 def delete_blob(bucket_name, blob_name):
     """Deletes a blob from the bucket."""
@@ -66,6 +71,7 @@ def google_transcribe(audio_file_name):
     if channels > 1:
         stereo_to_mono(file_name)
     '''
+    sample_rate_mp3 = mp3_framerate(file_name)
     bucket_name = bucketname
     source_file_name = filepath + audio_file_name
     destination_blob_name = audio_file_name
@@ -80,7 +86,7 @@ def google_transcribe(audio_file_name):
 
     config = types.RecognitionConfig(
     encoding=enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED,
-    sample_rate_hertz=16000,
+    sample_rate_hertz=sample_rate_mp3,
     language_code='en-US')
     # Detects speech in the audio file
     operation = client.long_running_recognize(config, audio)
@@ -104,5 +110,5 @@ if __name__ == "__main__":
     for audio_file_name in os.listdir(filepath):
         print(audio_file_name)
         transcript = google_transcribe(audio_file_name)
-        transcript_filename = '739.txt'
+        transcript_filename = audio_file_name.split('.')[0] + '.txt'
         write_transcripts(transcript_filename,transcript)
