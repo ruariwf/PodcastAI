@@ -1,9 +1,3 @@
-
-filepath = "C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/Code/audio/"     #Input audio file path
-output_filepath = "C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/Code/" #Final transcript path
-bucketname = "podcast_storage_mp3" #Name of the bucket created in the step before
-#audio_file_name = "#737 - Cooking Tips &  Lost Keys.mp3"
-# Import libraries
 from pydub import AudioSegment
 import io
 import os
@@ -13,6 +7,16 @@ from google.cloud.speech import types
 import wave
 from google.cloud import storage
 from pydub.utils import mediainfo
+import concurrent.futures
+
+
+
+filepath = "C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/Code/audio/"     #Input audio file path
+output_filepath = "C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/Code/transcripts/" #Final transcript path
+bucketname = "podcast_storage_mp3" #Name of the bucket created in the step before
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
+# Import libraries
+
 
 
 def mp3_to_wav(audio_file_name):
@@ -75,26 +79,28 @@ def google_transcribe(audio_file_name):
     bucket_name = bucketname
     source_file_name = filepath + audio_file_name
     destination_blob_name = audio_file_name
-    
+    print("Uploading "+ audio_file_name)
     upload_blob(bucket_name, source_file_name, destination_blob_name)
     
     gcs_uri = 'gs://' + bucketname + '/' + audio_file_name
     transcript = ''
-    
+    print(sample_rate_mp3)
     client = speech.SpeechClient()
     audio = types.RecognitionAudio(uri=gcs_uri)
 
     config = types.RecognitionConfig(
     encoding=enums.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED,
-    sample_rate_hertz=sample_rate_mp3,
+    sample_rate_hertz=44100,
     language_code='en-US')
     # Detects speech in the audio file
+    print("Transcribing " + audio_file_name)
     operation = client.long_running_recognize(config, audio)
     response = operation.result(timeout=10000)
     for result in response.results:
         transcript += result.alternatives[0].transcript
-    
+    print("deleting " + audio_file_name)
     delete_blob(bucket_name, destination_blob_name)
+    print(transcript)
     return transcript
 
 def write_transcripts(transcript_filename,transcript):
@@ -104,11 +110,14 @@ def write_transcripts(transcript_filename,transcript):
     
 
 #google_transcribe("737 - Cooking Tips &  Lost Keys.mp3")
+def run_transcribe(audio_file_name):
+    transcript = google_transcribe(audio_file_name)
+    transcript_filename = audio_file_name.split('.')[0] + '.txt'
+    write_transcripts(transcript_filename,transcript)
 
 
 if __name__ == "__main__":
     for audio_file_name in os.listdir(filepath):
-        print(audio_file_name)
-        transcript = google_transcribe(audio_file_name)
-        transcript_filename = audio_file_name.split('.')[0] + '.txt'
-        write_transcripts(transcript_filename,transcript)
+        executor.submit(run_transcribe, audio_file_name)
+
+
