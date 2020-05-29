@@ -7,23 +7,12 @@ df3 = pd.DataFrame({'Representative name for the entity': [], 'Entity type': [],
 
 def analyze_entities(text_content, globaldf):
     globaldf = pd.DataFrame({'Representative name for the entity': [], 'Entity type': [], 'Salience score': [], 'Episode Number':[],'Episode Title':[]})
-    """
-    Analyzing Entities in a String
-
-    Args:
-      text_content The text content to analyze
-    """
     # set downloads from file and append to data frame
     client = language_v1.LanguageServiceClient()
-
-    # text_content = 'California is a state.'
 
     # Available types: PLAIN_TEXT, HTML
     type_ = enums.Document.Type.PLAIN_TEXT
 
-    # Optional. If not specified, the language is automatically detected.
-    # For list of supported languages:
-    # https://cloud.google.com/natural-language/docs/languages
     language = "en"
     document = {"content": text_content, "type": type_, "language": language}
 
@@ -39,17 +28,10 @@ def analyze_entities(text_content, globaldf):
         else:
             globaldf = globaldf.append({'Representative name for the entity': entity.name, 'Entity type': enums.Entity.Type(entity.type).name, 'Salience score': entity.salience, 'Episode Number':epNumber,'Episode Title':epTitle}, ignore_index=True)        
     return(globaldf)
-    #globaldf = globaldf.append(df)
-
-
-    # Get the language of the text, which will be the same as
-    # the language specified in the request or, if not specified,
-    # the automatically-detected language.
-    #print(u"Language of the text: {}".format(response.language))
 
 #Import Airtable with downloads and names
 #loop through analyze entities and add in downloads for that episode [Episode #, Entity, Entity Type, Salience, YT Downloads, Podcast Downloads, Total Downloads]
-data = pd.read_csv("C:/Users/ruari/arationalfeartranscripts.csv", quotechar='"', engine='python') 
+data = pd.read_csv(r"C:\Users\ruari\Google Drive (ruari@whalepodanalytics.com)\Podcast AI\Transcribed Podcasts\Shameless\transcript.csv", quotechar='"', engine='python') 
 
 dfcsv = pd.DataFrame(data)
 
@@ -65,7 +47,7 @@ for index, row in dfcsv.iterrows():
     except:
         print(epTitle + " error")
 
-df3.to_csv(r'C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/A Rational Fear/TranscriptAnalysis.csv', index = False)
+df3.to_csv(r'C:\Users\ruari\Google Drive (ruari@whalepodanalytics.com)\Podcast AI\Transcribed Podcasts\Shameless\EntityAnalysis.csv', index = False)
 
 
 

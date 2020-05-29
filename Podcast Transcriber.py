@@ -8,6 +8,7 @@ import wave
 from google.cloud import storage
 from pydub.utils import mediainfo
 import concurrent.futures
+import pandas as pd
 
 
 
@@ -17,7 +18,7 @@ bucketname = "podcast_storage_mp3" #Name of the bucket created in the step befor
 executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
 # Import libraries
 
-
+transcriptlist = []
 
 def mp3_to_wav(audio_file_name):
     if audio_file_name.split('.')[2] == 'mp3':    
@@ -100,7 +101,7 @@ def google_transcribe(audio_file_name):
         transcript += result.alternatives[0].transcript
     print("deleting " + audio_file_name)
     delete_blob(bucket_name, destination_blob_name)
-    print(transcript)
+    #print(transcript)
     return transcript
 
 def write_transcripts(transcript_filename,transcript):
@@ -109,15 +110,23 @@ def write_transcripts(transcript_filename,transcript):
     f.close()
     
 
-#google_transcribe("737 - Cooking Tips &  Lost Keys.mp3")
 def run_transcribe(audio_file_name):
     transcript = google_transcribe(audio_file_name)
     transcript_filename = audio_file_name.split('.')[0] + '.txt'
     write_transcripts(transcript_filename,transcript)
+    save_to_list(audio_file_name, transcript)
+
+def save_to_list(audio_file_name , transcript):
+    transcriptlist.append([audio_file_name,transcript])
+
 
 
 if __name__ == "__main__":
     for audio_file_name in os.listdir(filepath):
         executor.submit(run_transcribe, audio_file_name)
+    dfcolumns = ['Episode' , 'Transcript']
+    df = pd.DataFrame(transcriptlist,columns = dfcolumns)
+    df.to_csv(r'C:/Users/ruari/Google Drive (ruari@whalepodanalytics.com)/Podcast AI/PodcastTranscript.csv', index = False)
+    
 
 
